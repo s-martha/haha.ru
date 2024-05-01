@@ -1,9 +1,9 @@
-fastapi
-uvicorn
-sqlalchemy
-aiosqlite
+fastapi 
+uvicorn 
+sqlalchemy == 2.0.20
+aiosqlite 
 
 psycopg2
-psycopg-binary
-pydantic
-pydantic-settings
+psycopg2-binary
+pydantic == 2.3.0
+pydantic-settings == 2.0.3
