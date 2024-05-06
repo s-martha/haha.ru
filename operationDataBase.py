@@ -2,10 +2,6 @@ import dataBase as db
 from dataBase import Base, session_factory
 
 
-def create_tables():
-    Base.metadata.drop_all(db.engine)
-    Base.metadata.create_all(db.engine)
-
 def insert_data():
     pelmen = db.Users(username = "IIeJIbMeHb", login = "IIeJIbMeHb2005", password_hash = 14522)
     nagibator = db.Users(username = "Nagibator3000", login = "NagibatorDA", password_hash = 202305)
@@ -22,6 +18,8 @@ def print_data(table):
             print("id:", i.id)
         
 
-create_tables()
+
 insert_data()
 print_data(db.Users)
+
+
