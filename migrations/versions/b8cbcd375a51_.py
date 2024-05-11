@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f3cdad29fc93
+Revision ID: b8cbcd375a51
 Revises: 
-Create Date: 2024-05-09 18:17:03.625777
+Create Date: 2024-05-11 19:56:44.384932
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f3cdad29fc93'
+revision: str = 'b8cbcd375a51'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,11 +40,16 @@ def upgrade() -> None:
     sa.Column('hr_company_id', sa.Integer(), nullable=True),
     sa.Column('verified', sa.Boolean(), nullable=False),
     sa.Column('login', sa.String(), nullable=False),
-    sa.Column('password_hash', sa.Integer(), nullable=False),
+    sa.Column('email', sa.String(length=320), nullable=False),
+    sa.Column('hashed_password', sa.String(length=1024), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_superuser', sa.Boolean(), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['hr_company_id'], ['company.id'], ),
     sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_table('resume',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -82,6 +87,7 @@ def downgrade() -> None:
     op.drop_table('communication')
     op.drop_table('vacancy')
     op.drop_table('resume')
+    op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
     op.drop_table('role')
     op.drop_table('company')
