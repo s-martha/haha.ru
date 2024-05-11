@@ -7,10 +7,6 @@ from config import setting
 
 from dataBase.operationDataBase import *
 
-
-
-
-
 engine = create_async_engine(
     url=setting.DATABASE_URL_asyncpg, pool_size=5, max_overflow=10
 )
@@ -38,12 +34,19 @@ async def get_main_page(user_login: str):
     async with session_factory() as session:
             
         res_ = await session.execute(select(db.User).where(db.User.login == user_login))
-        res = res_.scalars().all()
+        res_ = res_.scalars().all()
 
-        if(len(res) == 0):
+        if(len(res_) == 0):
             return None
-        return [{"id": i.id, "username": i.username, "login": i.login} for i in res]
+        return [{"id": i.id, "username": i.username, "login": i.login} for i in res_]
 
-# print_data(session_factory, db.User)
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-asyncio.run(print_data(session_factory, db.User))
+
+async def main():
+    await erase_data(session_factory, db.User)
+    await insert_data(session_factory)
+    await print_data(session_factory, db.User)
+
+if __name__ == '__main__':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.run(main())
+
