@@ -4,8 +4,9 @@ sqlalchemy == 2.0.20
 aiosqlite 
 alembic
 
-
-psycopg2
-psycopg2-binary
+fastapi-users[sqlalchemy]
+psycopg == 3.1.10
+psycopg-binary == 3.1.10
 pydantic == 2.3.0
 pydantic-settings == 2.0.3
+asyncpg==0.28.0
