@@ -22,6 +22,7 @@ fastapi_users = fastapi_users.FastAPIUsers[User, int](
     get_user_manager,
     [auth_backend],
 )
+
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
@@ -51,7 +52,7 @@ current_user = fastapi_users.current_user()
 async def protected_route(user: User = Depends(current_user)):
     async with session_factory() as session:        
         role_ = await session.get(db.Role, user.role_id)
-        return f"Hello, {user.username}, your role is {role_.role_name}"
+        return f"Hello, {user.username}, your role is {role_.role_name if role_ else 'slave'}"
 
 @app.get("/profile/{user_login}")
 async def get_main_page(user_login: str):
@@ -62,7 +63,7 @@ async def get_main_page(user_login: str):
 
         if(len(res_) == 0):
             return None
-        return [{"id": i.id, "username": i.username, "login": i.login} for i in res_]
+        return [i.__dict__ for i in res_]
 
 
 async def main():

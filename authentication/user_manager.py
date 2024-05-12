@@ -38,8 +38,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         """
         await self.validate_password(user_create.password, user_create)
 
-        existing_user = await self.user_db.get_by_email(user_create.email)
-        if existing_user is not None:
+        existing_email_user = await self.user_db.get_by_email(user_create.email)
+        existing_login_user = await self.user_db.get_by_login(user_create.login)
+
+        if existing_email_user is not None or existing_login_user is not None:
             raise exceptions.UserAlreadyExists()
 
         user_dict = (
@@ -57,6 +59,21 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         await self.on_after_register(created_user, request)
 
         return created_user
+    
+    async def get_by_login(self, user_login: str) -> models.UP:
+        """
+        Get a user by e-mail.
+
+        :param user_email: E-mail of the user to retrieve.
+        :raises UserNotExists: The user does not exist.
+        :return: A user.
+        """
+        user = await self.user_db.get_by_login(user_login)
+
+        if user is None:
+            raise exceptions.UserNotExists()
+
+        return user
     
     
 async def get_user_manager(user_db=Depends(get_user_db)):

@@ -1,11 +1,11 @@
-from typing import Annotated, AsyncGenerator
+from typing import Annotated, AsyncGenerator, Optional
 
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import ForeignKey, String, Boolean
+from sqlalchemy import ForeignKey, String, Boolean, select, func
 
 from config import setting
 from dataBase.models import Company, Role
@@ -17,6 +17,12 @@ base_id = Annotated[int, mapped_column(primary_key=True)]
 class Base(DeclarativeBase):
     pass
 
+class MySQLAlchemyUserDatabase(SQLAlchemyUserDatabase):
+    async def get_by_login(self, login: str) -> Optional[int]:
+        statement = select(self.user_table).where(
+            func.lower(self.user_table.login) == func.lower(login)
+        )
+        return await self._get_user(statement)
 
 class User(SQLAlchemyBaseUserTable[int], Base):
     email: Mapped[str] = mapped_column(
@@ -52,4 +58,4 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
-    yield SQLAlchemyUserDatabase(session, User)
+    yield MySQLAlchemyUserDatabase(session, User)
