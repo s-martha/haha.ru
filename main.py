@@ -35,16 +35,19 @@ app.include_router(
     tags=["auth"],
 )
 
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserCreate),
+    prefix="/user",
+    tags=["user"],
+)
+
 @app.get("/")
 def get_main_page():
     """the first page every visitor sees"""
     return "Welcome to haha.ru! fsddd"
 
 
-@app.get("/login")
-def get_login_page():
-    """page where user enters login and password"""
-    return "Login page"
+
 
 current_user = fastapi_users.current_user()
 

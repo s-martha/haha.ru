@@ -30,12 +30,10 @@ class UserCreate(schemas.BaseUserCreate):
 
 
 class UserUpdate(schemas.BaseUserUpdate):
-    email: str
-    login: str
-    password: str
-    username: str
-    role_id: int | None
-    hr_company_id: int | None
-    is_active: Optional[bool] = True
-    is_superuser: Optional[bool] = False
-    is_verified: Optional[bool] = False
+    password: str| None = None
+    email: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+    is_verified: Optional[bool] = None
+    role_id: Optional[int] = 1
+    hr_company_id: Optional[int] = None
