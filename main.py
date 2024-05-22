@@ -10,7 +10,8 @@ from authentication.user_manager import get_user_manager
 from config import setting
 from authentication.authentication import auth_backend
 from dataBase.operationDataBase import *
-
+from typing import Annotated
+from Models.models import Vacancy
 engine = create_async_engine(
     url=setting.DATABASE_URL_asyncpg, pool_size=5, max_overflow=10
 )
@@ -18,10 +19,14 @@ engine = create_async_engine(
 session_factory = async_sessionmaker(engine)
 app = FastAPI()
 
+
 fastapi_users = fastapi_users.FastAPIUsers[User, int](
     get_user_manager,
     [auth_backend],
 )
+current_user = fastapi_users.current_user()
+current_active_verified_user = fastapi_users.current_user(active=True, verified=True)
+
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
@@ -30,26 +35,35 @@ app.include_router(
 )
 
 app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
+    fastapi_users.get_register_router(UserRead, Annotated[UserCreate,Depends()]),
     prefix="/auth",
     tags=["auth"],
 )
 
 app.include_router(
-    fastapi_users.get_users_router(UserRead, UserCreate),
+    fastapi_users.get_users_router(UserRead, Annotated[UserCreate,Depends()]),
     prefix="/user",
     tags=["user"],
 )
 
 @app.get("/")
-def get_main_page():
+async def get_main_page():
     """the first page every visitor sees"""
     return "Welcome to haha.ru! fsddd"
 
+@app.post("/vacancy")
+async def create_vacancy(vac: Annotated[Vacancy,Depends()], user: User = Depends(current_active_verified_user)):
+    async with session_factory() as session:
+        newVac = db.Vacancy(**dict(vac))
+        newVac.user_id = user.id
+        session.add_all([newVac])
+        await session.commit()
+
+    return dict(vac)
 
 
 
-current_user = fastapi_users.current_user()
+
 
 @app.get("/profile/me")
 async def protected_route(user: User = Depends(current_user)):
@@ -69,11 +83,15 @@ async def get_main_page(user_login: str):
         return [i.__dict__ for i in res_]
 
 
+
+
+
 async def main():
     # await erase_data(session_factory, db.User)
     # await insert_data(session_factory)
     # await print_data(session_factory, db.User)
-    await create_role(session_factory)
+    # await create_role(session_factory)
+    pass
 
 
 

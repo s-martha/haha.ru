@@ -1,7 +1,7 @@
 from typing import Annotated
 from sqlalchemy import Boolean, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-
+from pydantic import BaseModel
 class Base(DeclarativeBase):
     pass
 

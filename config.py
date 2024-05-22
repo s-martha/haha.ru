@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+import os
 class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: str
