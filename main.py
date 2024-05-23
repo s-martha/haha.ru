@@ -1,6 +1,6 @@
 import asyncio
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, APIRouter
 import fastapi_users
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -11,14 +11,14 @@ from config import setting
 from authentication.authentication import auth_backend
 from dataBase.operationDataBase import *
 from typing import Annotated
-from Models.models import Vacancy
+from Models.models import *
 engine = create_async_engine(
     url=setting.DATABASE_URL_asyncpg, pool_size=5, max_overflow=10
 )
 
 session_factory = async_sessionmaker(engine)
 app = FastAPI()
-
+router = APIRouter()
 
 fastapi_users = fastapi_users.FastAPIUsers[User, int](
     get_user_manager,
@@ -51,8 +51,8 @@ async def get_main_page():
     """the first page every visitor sees"""
     return "Welcome to haha.ru! fsddd"
 
-@app.post("/vacancy")
-async def create_vacancy(vac: Annotated[Vacancy,Depends()], user: User = Depends(current_active_verified_user)):
+@router.post("/create", tags=["vacancy"])
+async def create_vacancy(vac: Annotated[VacancyCreate,Depends()], user: User = Depends(current_active_verified_user)):
     async with session_factory() as session:
         newVac = db.Vacancy(**dict(vac))
         newVac.user_id = user.id
@@ -60,6 +60,16 @@ async def create_vacancy(vac: Annotated[Vacancy,Depends()], user: User = Depends
         await session.commit()
 
     return dict(vac)
+
+@router.delete("/delete", tags=["vacancy"])
+async def delete_vacancy(vacancy: Annotated[VacancyUpdate,Depends()]):
+    async with session_factory() as session:
+        res_ = await session.get(db.Vacancy, vacancy.id)
+        if res_ is None:
+            return "Vacancy isn't found"
+        await session.delete(res_)
+        await session.commit()
+    return "Vacancy successfully deleted"
 
 
 
@@ -95,6 +105,9 @@ async def main():
 
 
 
+
+
+app.include_router(router)
 
 if __name__ == '__main__':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
