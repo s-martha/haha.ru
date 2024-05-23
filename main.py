@@ -52,14 +52,14 @@ async def get_main_page():
     return "Welcome to haha.ru! fsddd"
 
 @router.post("/create", tags=["vacancy"])
-async def create_vacancy(vac: Annotated[VacancyCreate,Depends()], user: User = Depends(current_active_verified_user)):
+async def create_vacancy(vacancy: Annotated[VacancyCreate,Depends()], user: User = Depends(current_active_verified_user)):
     async with session_factory() as session:
-        newVac = db.Vacancy(**dict(vac))
+        newVac = db.Vacancy(**dict(vacancy))
         newVac.user_id = user.id
         session.add_all([newVac])
         await session.commit()
 
-    return dict(vac)
+    return dict(vacancy)
 
 @router.delete("/delete", tags=["vacancy"])
 async def delete_vacancy(vacancy: Annotated[VacancyUpdate,Depends()]):
@@ -70,9 +70,29 @@ async def delete_vacancy(vacancy: Annotated[VacancyUpdate,Depends()]):
         await session.delete(res_)
         await session.commit()
     return "Vacancy successfully deleted"
+@router.get("/filter", tags=["vacancy"])
+async def search_vacancy(vacancy: Annotated[VacancySearch,Depends()]):
+    async with session_factory() as session:
+        query = select(db.Vacancy)
+        conditions = []
 
+        if vacancy.id is not None:
+            conditions.append(db.Vacancy.id == vacancy.id)
+        if vacancy.title is not None:
+            conditions.append(db.Vacancy.title == vacancy.title)
+        if vacancy.salrayGreaterOrEqual is not None:
+            conditions.append(db.Vacancy.salary >= vacancy.salrayGreaterOrEqual)
+        if vacancy.user_id is not None:
+            conditions.append(db.Vacancy.user_id == vacancy.user_id)
+        if vacancy.company_id is not None:
+            conditions.append(db.Vacancy.company_id == vacancy.company_id)
 
+        if conditions:
+            query = query.where(*conditions)
 
+        result = await session.execute(query)
+        vacancies = result.scalars().all()
+        return vacancies
 
 
 @app.get("/profile/me")
