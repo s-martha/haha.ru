@@ -62,7 +62,7 @@ async def create_vacancy(vacancy: Annotated[VacancyCreate,Depends()], user: User
     return dict(vacancy)
 
 @router.delete("/delete", tags=["vacancy"])
-async def delete_vacancy(vacancy: Annotated[VacancyUpdate,Depends()]):
+async def delete_vacancy(vacancy: Annotated[VacancyDelete,Depends()]):
     async with session_factory() as session:
         res_ = await session.get(db.Vacancy, vacancy.id)
         if res_ is None:
@@ -93,6 +93,39 @@ async def search_vacancy(vacancy: Annotated[VacancySearch,Depends()]):
         result = await session.execute(query)
         vacancies = result.scalars().all()
         return vacancies
+
+
+@router.post("/addResume", tags=["resume"])
+async def create_resume(resume: Annotated[ResumeCreate,Depends()], user: User = Depends(current_active_verified_user)):
+    async with session_factory() as session:
+        newResume = db.Resume(**dict(resume))
+        newResume.user_id = user.id
+        session.add(newResume)
+        await session.commit()
+
+    return dict(resume)
+
+@router.delete("/delResume", tags=["resume"])
+async def delete_resume(resume: Annotated[ResumeDelete,Depends()], user: User = Depends(current_active_verified_user)):
+    async with session_factory() as session:
+
+        res_ = await session.get(db.Resume,resume.id)
+
+        if res_ is None:
+            return "Resume isn't found"
+        await session.delete(res_)
+        await session.commit()
+    return "Resume successfully deleted"
+
+@router.get("/findResume", tags=["resume"])
+async def find_resumes(resume : Annotated[ResumeSearch,Depends()]):
+    async with session_factory() as session:
+        query = select(db.Resume).where(db.Resume.user_id == resume.user_id)
+
+        result = await session.execute(query)
+        resumes = result.scalars().all()
+
+        return resumes
 
 
 @app.get("/profile/me")

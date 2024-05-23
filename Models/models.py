@@ -11,7 +11,7 @@ class VacancyCreate(Base):
     descriprion: str | None
     contacts: str | None
 
-class VacancyUpdate(Base):
+class VacancyDelete(Base):
     id: int
 
 class VacancySearch(Base):
@@ -20,4 +20,15 @@ class VacancySearch(Base):
     company_id: int | None = None
     title: str | None = None
     salrayGreaterOrEqual: int | None = None
+
+
+
+class ResumeCreate(Base):
+    title: str
+    descriprion: str
+    contacts: str
+class ResumeDelete(Base):
+    id : int
+class ResumeSearch(Base):
+    user_id : int
 
