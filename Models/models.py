@@ -15,8 +15,6 @@ class VacancyDelete(Base):
     id: int
 
 class VacancySearch(Base):
-    id: int | None = None
-    user_id: int | None = None
     company_id: int | None = None
     title: str | None = None
     salrayGreaterOrEqual: int | None = None

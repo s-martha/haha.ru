@@ -76,14 +76,10 @@ async def search_vacancy(vacancy: Annotated[VacancySearch,Depends()]):
         query = select(db.Vacancy)
         conditions = []
 
-        if vacancy.id is not None:
-            conditions.append(db.Vacancy.id == vacancy.id)
         if vacancy.title is not None:
             conditions.append(db.Vacancy.title == vacancy.title)
         if vacancy.salrayGreaterOrEqual is not None:
             conditions.append(db.Vacancy.salary >= vacancy.salrayGreaterOrEqual)
-        if vacancy.user_id is not None:
-            conditions.append(db.Vacancy.user_id == vacancy.user_id)
         if vacancy.company_id is not None:
             conditions.append(db.Vacancy.company_id == vacancy.company_id)
 
